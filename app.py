@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import qrcode
 import io
+import os
+import json
 import smtplib
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
@@ -32,6 +34,13 @@ SECRET_KEY = 'your_secret_key'  # Replace with your actual secret key
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/dropdown_options', methods=['GET'])
+def concert_options():
+    options_file = os.path.join(app.root_path, 'concert_options.json')
+    with open(options_file, 'r') as file:
+        options = json.load(file)
+    return jsonify({'options': options})
 
 @app.route('/request_ticket', methods=['POST'])
 def request_ticket():

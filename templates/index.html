@@ -15,6 +15,9 @@
             <input type="text" id="firstName" placeholder="First Name" required>
             <input type="text" id="lastName" placeholder="Last Name" required>
             <input type="email" id="email" placeholder="Email Address" required>
+            <select id="dropdown" required>
+                <option value="" disabled selected>Select an concert</option>
+            </select>
             <input type="number" id="numTickets" placeholder="Number of Tickets" min="1" required>
             <button type="submit">Reserve Tickets</button>
         </form>
@@ -26,6 +29,23 @@
     </div>
 
     <script>
+
+        async function loadDropdownOptions() {
+            const response = await fetch('/dropdown_options');
+            const data = await response.json();
+            const dropdown = document.getElementById('dropdown');
+            
+            data.options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                dropdown.appendChild(opt);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadDropdownOptions);
+
+
         document.getElementById('ticketForm').addEventListener('submit', async function(event) {
             event.preventDefault();
 
