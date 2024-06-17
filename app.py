@@ -40,7 +40,7 @@ def concert_options():
     options_file = os.path.join(app.root_path, 'concert_options.json')
     with open(options_file, 'r') as file:
         options = json.load(file)
-    return jsonify({'options': options})
+    return jsonify(options)
 
 @app.route('/request_ticket', methods=['POST'])
 def request_ticket():
