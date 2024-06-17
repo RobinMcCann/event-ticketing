@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-import io
 import os
 import json
 import smtplib
@@ -10,11 +9,16 @@ from email.mime.multipart import MIMEMultipart
 import uuid
 import hashlib
 import hmac
-import base64
+from dotenv import load_dotenv
+
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tickets.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 class Ticket(db.Model):
@@ -29,7 +33,7 @@ class Ticket(db.Model):
 
 db.create_all()
 
-TRANSACTION_SECRET_KEY = 'your_secret_key'  # Replace with your actual secret key
+TRANSACTION_SECRET_KEY = os.getenv('TRANSACTION_SECRET_KEY')
 
 @app.route('/')
 def index():
