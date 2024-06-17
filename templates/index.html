@@ -8,9 +8,9 @@
 </head>
 <body>
     <div class="container">
-        <h1>Akademens och Lyrans</h1>
-        <h2>Biljettbeställning</h2>
-        <p>Fyll i ditt namn, din epost-address, köparens namn och hur många biljetter hen vill ha. Du kan bara beställa biljetter åt en kund, för en konsert, och högst 8 biljetter åt gången.</p>
+        <h1 id="container-header-1">Akademens och Lyrans</h1>
+        <h2 id="container-header-2">Biljettbeställning</h2>
+        <p id="container-instructions">Fyll i ditt namn, din epost-address, köparens namn och hur många biljetter hen vill ha. Du kan bara beställa biljetter åt en kund, för en konsert, och högst 8 biljetter åt gången.</p>
         <form id="ticketForm">
             <input type="text" id="firstName" placeholder="Förnamn" required>
             <input type="text" id="lastName" placeholder="Efternamn" required>
@@ -22,6 +22,7 @@
             <input type="number" id="numTickets" placeholder="Antal biljetter" min="1" max="8" required>
             <button type="submit">Skapa biljettlänk</button>
         </form>
+        <h2 id="responseTitle"></h2>
         <div class="response" id="response"></div>
     </div>
 
@@ -38,6 +39,20 @@
                 opt.textContent = konsert;
                 dropdown.appendChild(opt);
             });
+
+            // Add event listener to change the color when a valid option is selected
+            dropdown.addEventListener('change', function() {
+                if (this.value === "Select a concert") {
+                    this.style.color = "gray";
+                } else {
+                    this.style.color = "black";
+                }
+            });
+
+            // Initial color set to gray if placeholder is selected
+            if (dropdown.value === "") {
+                dropdown.style.color = "gray";
+    }
         }
 
         document.addEventListener('DOMContentLoaded', loadDropdownOptions);
@@ -53,44 +68,65 @@
             const numTickets = document.getElementById('numTickets').value;
             const concert = document.getElementById('concert-dropdown').value;
 
+            const responseTitle = document.getElementById('responseTitle')
             const responseDiv = document.getElementById('response');
 
+            responseTitle.style.display = 'none'
             responseDiv.style.display = 'none';
 
-            const response = await fetch('/request_ticket', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    seller_name: `${firstName} ${lastName}`,
-                    seller_email: email,
-                    buyer_name: buyerName,
-                    concert: concert,
-                    num_tickets: numTickets
-                })
-            });
+            try {
+                const response = await fetch('/request_ticket', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        seller_name: `${firstName} ${lastName}`,
+                        seller_email: email,
+                        concert: concert,
+                        buyer_name: buyerName,
+                        num_tickets: numTickets
+                    })
+                });
 
-            const responseData = await response.json();
+                const responseData = await response.json();
 
-            if (response.ok) {
-                /*
-                responseDiv.textContent = `Biljetter skapade! Här är din biljettlänk: ${responseData.ticket_url}
-                                           Korist: ${responseData.seller_name}
-                                           Kund: ${responseData.buyerName}
-                                           Konsert. ${reponseData.concert}
-                                           Antal biljetter: ${responseData.num_tickets}
-                                           Transaktions-ID: ${responseData.transaction_id}`;
-                */
-                responseDiv.textContent = `HALLÅ`;
-                responseDiv.className = 'response success';
-            } else {
-                responseDiv.textContent = `Error: ${responseData.message || 'Något gick fel.'}`;
+                if (response.ok) {
+                    const h1 = document.getElementById("container-header-1")
+                    h1.style.display = 'none';
+                    const h2 = document.getElementById("container-header-2")
+                    h2.style.display = 'none';
+                    const p = document.getElementById("container-instructions")
+                    p.style.display = 'none';
+                    const form = document.getElementById("ticketForm")
+                    form.style.display = 'none';
+
+                    responseTitle.textContent = 'Biljetter skapade!'
+                    responseDiv.innerHTML = `
+                        <p>Här är din biljettlänk:</p> 
+                        <p><a href="${responseData.ticket_url}" target="_blank">${responseData.ticket_url}</a></p>
+                        <p><i>Korist:</i> ${responseData.seller_name}</p>
+                        <p><i>Kund:</i> ${responseData.buyer_name}</p>
+                        <p><i>Konsert:</i> ${responseData.concert}</p>
+                        <p><i>Antal biljetter:</i> ${responseData.num_tickets}</p>
+                        <p><i>Transaktions-ID:</i> ${responseData.transaction_id}</p>
+                    `;
+                    responseDiv.className = 'response success';
+                } else {
+                    responseDiv.textContent = `Error: ${responseData.message || 'Något gick fel.'}`;
+                    responseDiv.className = 'response error';
+                }
+
+                responseTitle.style.display = 'inline'
+                responseDiv.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error:', error);
+                responseDiv.textContent = 'Något gick fel vid kommunikation med servern.';
                 responseDiv.className = 'response error';
+                responseDiv.style.display = 'block';
             }
-
-            responseDiv.style.display = 'block';
-        });
+});
     </script>
 </body>
 </html>
