@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-import qrcode
 import io
 import os
 import json
@@ -20,16 +19,17 @@ db = SQLAlchemy(app)
 
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
+    seller_name = db.Column(db.String(80), nullable=False)
+    buyer_name = db.Column(db.String(80), nullable=False)
+    concert = db.Column(db.String(80), nullable=False)
     num_tickets = db.Column(db.Integer, nullable=False)
-    transaction_id = db.Column(db.String(120), unique=True, nullable=False)
+    transaction_id = db.Column(db.Integer, nullable=False)
     transaction_hmac = db.Column(db.String(64), unique=True, nullable=False)
-    scanned = db.Column(db.Boolean, default=False)
+    times_used = db.Column(db.Integer, default=0)
 
 db.create_all()
 
-SECRET_KEY = 'your_secret_key'  # Replace with your actual secret key
+TRANSACTION_SECRET_KEY = 'your_secret_key'  # Replace with your actual secret key
 
 @app.route('/')
 def index():
@@ -45,43 +45,42 @@ def concert_options():
 @app.route('/request_ticket', methods=['POST'])
 def request_ticket():
     data = request.json
-    name = data['name']
-    email = data['email']
+    seller_name = data['seller_name']
+    seller_email = data['seller_email']
+    buyer_name = data['buyer_name']
+    concert = data['concert']
     num_tickets = data['num_tickets']
     transaction_id = str(uuid.uuid4())
 
     # Generate HMAC for the transaction ID
-    transaction_hmac = hmac.new(SECRET_KEY.encode(), transaction_id.encode(), hashlib.sha256).hexdigest()
+    transaction_hmac = hmac.new(TRANSACTION_SECRET_KEY.encode(), transaction_id.encode(), hashlib.sha256).hexdigest()
     
-    new_ticket = Ticket(name=name, email=email, num_tickets=num_tickets, transaction_id=transaction_id, transaction_hmac=transaction_hmac)
+    new_ticket = Ticket(seller_name=seller_name,
+                        buyer_name=buyer_name,
+                        concert=concert,
+                        num_tickets=num_tickets,
+                        transaction_id=transaction_id,
+                        transaction_hmac=transaction_hmac)
+
     db.session.add(new_ticket)
     db.session.commit()
 
     # Generate URL with the HMAC
-    validation_url = f"http://localhost:5000/validate_ticket/{transaction_hmac}"
+    ticket_url = f"http://localhost:5000/view_ticket/{transaction_hmac}"
     
-    # Generate QR Code with the URL
-    qr = qrcode.QRCode()
-    qr.add_data(validation_url)
-    img = qr.make_image(fill='black', back_color='white')
-    buf = io.BytesIO()
-    img.save(buf)
-    buf.seek(0)
+    # Return ticket details and link
+    print(ticket_url)
 
-    qr_base64 = base64.b64encode(buf.read()).decode('utf-8')
-    
-    # Send QR code via email
-    #send_email(email, buf, transaction_id)
-    
-    # Return QR code and details
     return jsonify({
         'transaction_id': transaction_id, 
-        'name': name, 
+        'seller_name': seller_name, 
+        'buyer_name' : buyer_name,
+        'concert' : concert,
         'num_tickets': num_tickets, 
-        'validation_url': validation_url,
-        'qr_code': f"data:image/png;base64,{qr_base64}"
+        'ticket_url': ticket_url
         }), 201
-
+        
+'''
 def send_email(to_email, qr_image, transaction_id):
     msg = MIMEMultipart()
     msg['Subject'] = 'Your Event Ticket'
@@ -95,19 +94,28 @@ def send_email(to_email, qr_image, transaction_id):
     with smtplib.SMTP('smtp.example.com') as server:
         server.login('your_email@example.com', 'password')
         server.sendmail('your_email@example.com', to_email, msg.as_string())
+'''
 
-@app.route('/validate_ticket/<transaction_hmac>', methods=['GET'])
+@app.route('/claim_ticket/<transaction_hmac>', methods=['POST'])
+def claim_ticket(transaction_hmac):
+    pass
+
+@app.route('/view_ticket/<transaction_hmac>', methods=['GET'])
 def validate_ticket(transaction_hmac):
     ticket = Ticket.query.filter_by(transaction_hmac=transaction_hmac).first()
     if ticket:
-        expected_hmac = hmac.new(SECRET_KEY.encode(), ticket.transaction_id.encode(), hashlib.sha256).hexdigest()
+        expected_hmac = hmac.new(TRANSACTION_SECRET_KEY.encode(), ticket.transaction_id.encode(), hashlib.sha256).hexdigest()
         if hmac.compare_digest(transaction_hmac, expected_hmac):
-            if ticket.scanned:
-                return jsonify({'status': 'already_scanned'}), 400
-            else:
-                ticket.scanned = True
-                db.session.commit()
-                return jsonify({'status': 'valid', 'name': ticket.name, 'num_tickets': ticket.num_tickets}), 200
+            
+            # Render Ticket
+            return render_template('view_ticket.html',
+                                   buyerName = ticket.buyer_name,
+                                   sellerName = ticket.seller_name,
+                                   concert = ticket.concert,
+                                   numTickets = ticket.num_tickets,
+                                   ticketValid = True,
+                                   timesUsed = ticket.times_used)
+        
         else:
             return jsonify({'status': 'invalid_hmac'}), 403
     else:

@@ -8,23 +8,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>Akademens och Lyrans julkonserter 2023</h1>
+        <h1>Akademens och Lyrans</h1>
         <h2>Biljettbeställning</h2>
-        <p>Fyll i ditt namn, din epost-address och hur många biljetter du vill ha.</p>
+        <p>Fyll i ditt namn, din epost-address, köparens namn och hur många biljetter hen vill ha. Du kan bara beställa biljetter åt en kund, för en konsert, och högst 8 biljetter åt gången.</p>
         <form id="ticketForm">
-            <input type="text" id="firstName" placeholder="First Name" required>
-            <input type="text" id="lastName" placeholder="Last Name" required>
-            <input type="email" id="email" placeholder="Email Address" required>
-            <select id="dropdown" required>
+            <input type="text" id="firstName" placeholder="Förnamn" required>
+            <input type="text" id="lastName" placeholder="Efternamn" required>
+            <input type="email" id="email" placeholder="Din e-postaddress" required>
+            <input type="text" id="buyerName" placeholder="Kundens namn" required>
+            <select id="concert-dropdown" required>
                 <option value="" disabled selected>Select a concert</option>
             </select>
-            <input type="number" id="numTickets" placeholder="Number of Tickets" min="1" required>
-            <button type="submit">Reserve Tickets</button>
+            <input type="number" id="numTickets" placeholder="Antal biljetter" min="1" max="8" required>
+            <button type="submit">Skapa biljettlänk</button>
         </form>
-        <div id="qr-code-container" style="margin-top: 20px; display: none;">
-            <h2>Your QR Code</h2>
-            <img id="qr-code" src="" alt="QR Code">
-        </div>
         <div class="response" id="response"></div>
     </div>
 
@@ -33,7 +30,7 @@
         async function loadDropdownOptions() {
             const response = await fetch('/dropdown_options');
             const data = await response.json();
-            const dropdown = document.getElementById('dropdown');
+            const dropdown = document.getElementById('concert-dropdown');
             
             data.konserter.forEach(konsert => {
                 const opt = document.createElement('option');
@@ -52,14 +49,13 @@
             const firstName = document.getElementById('firstName').value;
             const lastName = document.getElementById('lastName').value;
             const email = document.getElementById('email').value;
+            const buyerName = document.getElementById('buyerName').value;
             const numTickets = document.getElementById('numTickets').value;
+            const concert = document.getElementById('concert-dropdown').value;
 
             const responseDiv = document.getElementById('response');
-            const qrCodeContainer = document.getElementById('qr-code-container');
-            const qrCodeImg = document.getElementById('qr-code');
 
             responseDiv.style.display = 'none';
-            qrCodeContainer.style.display = 'none';
 
             const response = await fetch('/request_ticket', {
                 method: 'POST',
@@ -67,8 +63,10 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    name: `${firstName} ${lastName}`,
-                    email: email,
+                    seller_name: `${firstName} ${lastName}`,
+                    seller_email: email,
+                    buyer_name: buyerName,
+                    concert: concert,
                     num_tickets: numTickets
                 })
             });
@@ -76,12 +74,18 @@
             const responseData = await response.json();
 
             if (response.ok) {
-                responseDiv.textContent = `Tickets reserved! Transaction ID: ${responseData.transaction_id}`;
+                /*
+                responseDiv.textContent = `Biljetter skapade! Här är din biljettlänk: ${responseData.ticket_url}
+                                           Korist: ${responseData.seller_name}
+                                           Kund: ${responseData.buyerName}
+                                           Konsert. ${reponseData.concert}
+                                           Antal biljetter: ${responseData.num_tickets}
+                                           Transaktions-ID: ${responseData.transaction_id}`;
+                */
+                responseDiv.textContent = `HALLÅ`;
                 responseDiv.className = 'response success';
-                qrCodeImg.src = responseData.qr_code;
-                qrCodeContainer.style.display = 'block';
             } else {
-                responseDiv.textContent = `Error: ${responseData.message || 'Something went wrong'}`;
+                responseDiv.textContent = `Error: ${responseData.message || 'Något gick fel.'}`;
                 responseDiv.className = 'response error';
             }
 
