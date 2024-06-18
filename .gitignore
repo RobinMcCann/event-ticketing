@@ -1,7 +1,7 @@
 tickets.db
 .env
 ideas.txt
-
+.vscode/
 __pycache__/
 
 *.pyc
