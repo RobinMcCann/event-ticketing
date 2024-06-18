@@ -41,7 +41,7 @@ def index():
 
 @app.route('/dropdown_options', methods=['GET'])
 def concert_options():
-    options_file = os.path.join(app.root_path, 'concert_options.json')
+    options_file = os.path.join(app.root_path, 'assets', 'concert_options.json')
     with open(options_file, 'r') as file:
         options = json.load(file)
     return jsonify(options)
