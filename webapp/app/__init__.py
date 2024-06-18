@@ -7,9 +7,10 @@ from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
 load_dotenv(dotenv_path)
 
+app = Flask(__name__, 
+            template_folder = '../templates', 
+            static_folder='../static') # Create an instance of the class for our use
 
-
-app = Flask(__name__, template_folder = "..\\templates") # Create an instance of the class for our use
 CORS(app)  # Enable CORS
 
 from app.utils.db import db
