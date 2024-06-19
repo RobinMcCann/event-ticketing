@@ -2,17 +2,18 @@
 FROM python:3.10-bookworm
 
 # Change workdir inside container
-WORKDIR /app
+WORKDIR /flask-app
 
-# Copy requirements file and install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy the application into the container
+COPY . /flask-app
 
-# Copy the rest of the application into the container
-COPY . /app
+# Install dependencies
+RUN pip install --no-cache-dir -r /flask-app/requirements.txt
 
 # Expose port
 EXPOSE 5000
 
-# Run application
-CMD ["python", "startup.py"]
+# Command to run the application, first initializing DB
+# This is overruled by the command in docker-compose.yml
+#CMD ["python", "-m", "app.initialize_db"]
+#CMD ["python", "-m", "app.initialize_db", "&&", "gunicorn", "--workers", "4", "-b", "0.0.0.0:5000", "--preload", "--pythonpath", "flask-app", "--log-level=debug", "app.wsgi:app"]

@@ -5,8 +5,8 @@ import hmac
 import uuid
 import hashlib
 
-from app import app
-from app.utils.db import db, Ticket
+from app import db
+from app.utils.models import Ticket
 
 
 TRANSACTION_SECRET_KEY = os.getenv('TRANSACTION_SECRET_KEY')

@@ -1,26 +1,25 @@
 from flask import Flask  # Import the Flask class
 from flask_cors import CORS
-
+from flask_sqlalchemy import SQLAlchemy
 import os
-from dotenv import load_dotenv
 
-dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
-load_dotenv(dotenv_path)
+db = SQLAlchemy()
 
-app = Flask(__name__, 
+def create_app():
+    app = Flask(__name__, 
             template_folder = '../templates', 
             static_folder='../static') # Create an instance of the class for our use
+    
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    
+    CORS(app)  # Enable CORS
+    # Register blueprints
 
-CORS(app)  # Enable CORS
+    from app.routes import bp as routes_bp
+    app.register_blueprint(routes_bp)
 
-from app.utils.db import db
-from app import routes
-from app.utils import utils
-
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-
-with app.app_context():
     db.init_app(app)
-    db.create_all()
+
+    return app
+
