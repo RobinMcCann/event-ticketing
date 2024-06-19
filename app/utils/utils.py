@@ -17,7 +17,7 @@ def validate_ticket(transaction_hmac):
         expected_hmac = hmac.new(TRANSACTION_SECRET_KEY.encode(), ticket.transaction_id.encode(), hashlib.sha256).hexdigest()
         if hmac.compare_digest(transaction_hmac, expected_hmac):
             
-            return jsonify({
+            return {
                 'status' : 'valid',
                 'buyer_name' : ticket.buyer_name,
                 'seller_name' : ticket.seller_name,
@@ -25,12 +25,12 @@ def validate_ticket(transaction_hmac):
                 'num_tickets' : ticket.num_tickets,
                 'ticket_valid' : True,
                 'times_used' : ticket.times_used
-            }), 200
+            }, 200
         
         else:
-            return jsonify({'status': 'invalid_hmac'}), 403
+            return {'status': 'invalid_hmac'}, 403
     else:
-        return jsonify({'status': 'invalid'}), 404
+        return {'status': 'invalid'}, 404
 
 
 

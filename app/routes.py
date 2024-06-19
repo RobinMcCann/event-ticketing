@@ -1,3 +1,4 @@
+import pstats
 from flask import (render_template, 
                    request, 
                    jsonify, 
@@ -19,37 +20,25 @@ bp = Blueprint('routes', __name__)
 def index():
     return render_template('index.html')
 
-@bp.route('/view_ticket2/<transaction_hmac>', methods=['GET'])
+@bp.route('/view_ticket/<transaction_hmac>', methods=['GET'])
 def view_ticket(transaction_hmac):
 
-    ticket_status = validate_ticket(transaction_hmac)
-    return jsonify(ticket_status)
+    ticket, status = validate_ticket(transaction_hmac)
 
+    if status == 200:
+        # Render Ticket
+        return render_template('view_ticket.html',
+                                buyerName = ticket['buyer_name'],
+                                sellerName = ticket['seller_name'],
+                                concert = ticket['concert'],
+                                numTickets = ticket['num_tickets'],
+                                ticketValid = ticket['ticket_valid'],
+                                timesUsed = ticket['times_used'])
 
-@bp.route('/view_ticket/<transaction_hmac>', methods=['GET'])
-def validate_ticket(transaction_hmac):
-
-    TRANSACTION_SECRET_KEY = os.getenv('TRANSACTION_SECRET_KEY')
-    
-    ticket = Ticket.query.filter_by(transaction_hmac=transaction_hmac).first()
-    if ticket:
-        expected_hmac = hmac.new(TRANSACTION_SECRET_KEY.encode(), ticket.transaction_id.encode(), hashlib.sha256).hexdigest()
-        if hmac.compare_digest(transaction_hmac, expected_hmac):
-            
-            # Render Ticket
-            return render_template('view_ticket.html',
-                                   buyerName = ticket.buyer_name,
-                                   sellerName = ticket.seller_name,
-                                   concert = ticket.concert,
-                                   numTickets = ticket.num_tickets,
-                                   ticketValid = True,
-                                   timesUsed = ticket.times_used)
-        
-        else:
-            return jsonify({'status': 'invalid_hmac'}), 403
-    else:
-        return jsonify({'status': 'invalid'}), 404
-
+    elif status == 403:
+        return ticket
+    elif status == 404:
+        return ticket
 
 @bp.route('/request_ticket', methods=['POST'])
 def request_ticket():

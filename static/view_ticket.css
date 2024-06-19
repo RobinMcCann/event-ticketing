@@ -1,0 +1,44 @@
+/* Reset default margins and paddings */
+body, html {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #b6ecbe; /* Pastel green background */
+}
+
+/* Style for the rotating logo */
+.rotating-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100px; /* Adjust size as needed */
+    height: 100px; /* Adjust size as needed */
+    margin-top: -50px; /* Half the height */
+    margin-left: -50px; /* Half the width */
+    opacity: 0.1; /* Light opacity */
+    animation: rotate 20s linear infinite;
+    z-index: 0; /* Ensure logo is behind content */
+}
+
+/* Animation for rotating logo */
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Style for the content container */
+.container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}

@@ -4,13 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Viev Ticket</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='view_ticket.css') }}">
 </head>
-<div class="view_ticket" id="ticket_view_div">
-    <p>Kund: {{ buyerName }},</p>
-    <p>Korist: {{ sellerName }},</p>
-    <p>Konsert: {{ concert }},</p>
-    <p>Antal biljetter: {{ numTickets }},</p>
-    <p>Giltig: {{ ticketValid }},</p>
-    <p>Använd {{ timesUsed }} gånger.</p>
-</div>
+<body>
+    <img src="{{ url_for('static', filename='logo-placeholder.png') }}" class="rotating_logo" alt="Logo">
+    <div class="container">
+        <div class="view_ticket" id="ticket_view_div">
+            <p>Kund: {{ buyerName }},</p>
+            <p>Korist: {{ sellerName }},</p>
+            <p>Konsert: {{ concert }},</p>
+            <p>Antal biljetter: {{ numTickets }},</p>
+            <p>Giltig: {{ ticketValid }},</p>
+            <p>Använd {{ timesUsed }} gånger.</p>
+        </div>
+        <button type="use-ticket">Använd biljett</button>
+    </div>
+</body>
+</html>
