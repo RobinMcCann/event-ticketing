@@ -7,17 +7,20 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='view_ticket.css') }}">
 </head>
 <body>
-    <img src="{{ url_for('static', filename='logo-placeholder.png') }}" class="rotating_logo" alt="Logo">
     <div class="container">
         <div class="view_ticket" id="ticket_view_div">
-            <p>Kund: {{ buyerName }},</p>
-            <p>Korist: {{ sellerName }},</p>
-            <p>Konsert: {{ concert }},</p>
-            <p>Antal biljetter: {{ numTickets }},</p>
-            <p>Giltig: {{ ticketValid }},</p>
-            <p>Använd {{ timesUsed }} gånger.</p>
+            <div class="ticket-row"><span class="label">Kund:</span> <span class="value">{{ buyerName }}</span></div>
+            <div class="ticket-row"><span class="label">Korist:</span> <span class="value">{{ sellerName }}</span></div>
+            <div class="ticket-row"><span class="label">Konsert:</span> <span class="value">{{ concert }}</span></div>
+            <div class="ticket-row"><span class="label">Antal biljetter:</span> <span class="value">{{ numTickets }}</span></div>
+            <div class="ticket-row"><span class="label">Giltig:</span> <span class="value">{{ ticketValid }}</span></div>
+            <div class="ticket-row"><span class="label">Använd:</span> <span class="value">{{ timesUsed }} gånger</span></div>
         </div>
-        <button type="use-ticket">Använd biljett</button>
+        <div class="separator_line"></div>
+        <button type="use-ticket">Markera som använd</button>
+    </div>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='logo-placeholder.png') }}" alt="Logo">
     </div>
 </body>
 </html>

@@ -26,13 +26,14 @@ def view_ticket(transaction_hmac):
     ticket, status = validate_ticket(transaction_hmac)
 
     if status == 200:
+        valid_status = "Ja" if ticket['ticket_valid'] else "Nej"
         # Render Ticket
         return render_template('view_ticket.html',
                                 buyerName = ticket['buyer_name'],
                                 sellerName = ticket['seller_name'],
                                 concert = ticket['concert'],
                                 numTickets = ticket['num_tickets'],
-                                ticketValid = ticket['ticket_valid'],
+                                ticketValid = valid_status,
                                 timesUsed = ticket['times_used'])
 
     elif status == 403:
