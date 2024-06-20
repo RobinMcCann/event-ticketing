@@ -11,7 +11,15 @@ from app.utils.models import Ticket
 
 # Set up logging
 import logging
-logging.basicConfig(level=logging.DEBUG)
+# Configure the root logger
+logging.basicConfig(
+    level=logging.DEBUG,  # Adjust the level as needed (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)  # Ensure logs are written to stdout
+    ]
+)
+
 logger = logging.getLogger(__name__)
 
 
