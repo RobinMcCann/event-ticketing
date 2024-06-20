@@ -4,15 +4,31 @@ from flask import (render_template,
                    jsonify, 
                    Blueprint
                    )
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import json
 import hmac
 import uuid
 import hashlib
+import sys
+import pytz
  
-from app.utils.utils import validate_ticket
+from app.utils.utils import (validate_ticket,
+                             get_concert_time
+                             )
 from app.utils.models import Ticket
+
+# Set up logging
+import logging
+# Configure the root logger
+logging.basicConfig(
+    level=logging.DEBUG,  # Adjust the level as needed (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)  # Ensure logs are written to stdout
+    ]
+)
+logger = logging.getLogger(__name__)
 
 bp = Blueprint('routes', __name__)
 
@@ -25,21 +41,47 @@ def view_ticket(transaction_hmac):
 
     ticket, status = validate_ticket(transaction_hmac)
 
-    if status == 200:
-        valid_status = "Ja" if ticket['ticket_valid'] else "Nej"
-        # Render Ticket
-        return render_template('view_ticket.html',
-                                buyerName = ticket['buyer_name'],
-                                sellerName = ticket['seller_name'],
-                                concert = ticket['concert'],
-                                numTickets = ticket['num_tickets'],
-                                ticketValid = valid_status,
-                                timesUsed = ticket['times_used'])
-
-    elif status == 403:
+    if status == 403:
         return ticket
     elif status == 404:
         return ticket
+    elif status == 200:
+
+        concert = ticket['concert']
+        concert_time = get_concert_time(concert)
+
+        current_time = datetime.now(tz=pytz.utc)
+        # Convert current time to same timezone as concert time
+        current_time = current_time.astimezone(concert_time.tzinfo)
+
+        ticket_info = ticket
+        ticket_info.update({
+            "is_valid" : True, # Placeholder, can turn True
+            "is_concert" : False # Placeholder, can turn True
+        })
+
+        if ticket['times_used'] >= 1:
+            # Return Ticket has already been claimed
+            ticket_info["is_valid"] = False
+
+        if current_time > concert_time + timedelta(hours=-1) \
+            and current_time < concert_time + timedelta(hours=2):
+
+            ticket_info['is_concert'] = True
+
+        # Render Ticket
+
+        # For debugging
+        ticket_info['is_concert'] = True
+
+        logger.debug(ticket_info)
+
+        return render_template('view_ticket.html',
+                                **ticket_info)
+
+    return None
+
+    
 
 @bp.route('/request_ticket', methods=['POST'])
 def request_ticket():
@@ -89,4 +131,9 @@ def concert_options():
     options_file = os.path.join("/flask-app/static/concert_options.json")
     with open(options_file, 'r') as file:
         options = json.load(file)
-    return jsonify(options)
+    concerts = [concert['Namn'] for concert in options['konserter']]
+
+    return jsonify({
+        "konserter": concerts
+    }), 200
+

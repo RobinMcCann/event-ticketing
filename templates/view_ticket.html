@@ -7,20 +7,60 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='view_ticket.css') }}">
 </head>
 <body>
+    <div class="logo-container">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo-placeholder.png') }}" alt="Logo">
+        </div>
+    </div>
     <div class="container">
         <div class="view_ticket" id="ticket_view_div">
-            <div class="ticket-row"><span class="label">Kund:</span> <span class="value">{{ buyerName }}</span></div>
-            <div class="ticket-row"><span class="label">Korist:</span> <span class="value">{{ sellerName }}</span></div>
+            <div class="ticket-row"><span class="label">Kund:</span> <span class="value">{{ buyer_name }}</span></div>
+            <div class="ticket-row"><span class="label">Korist:</span> <span class="value">{{ seller_name }}</span></div>
             <div class="ticket-row"><span class="label">Konsert:</span> <span class="value">{{ concert }}</span></div>
-            <div class="ticket-row"><span class="label">Antal biljetter:</span> <span class="value">{{ numTickets }}</span></div>
-            <div class="ticket-row"><span class="label">Giltig:</span> <span class="value">{{ ticketValid }}</span></div>
-            <div class="ticket-row"><span class="label">Använd:</span> <span class="value">{{ timesUsed }} gånger</span></div>
+            <div class="ticket-row"><span class="label">Antal biljetter:</span> <span class="value">{{ num_tickets }}</span></div>
+            <div class="ticket-row"><span class="label">Giltig:</span> <span class="value">
+                {% if is_valid %}
+                    Ja
+                {% else %} 
+                    Nej
+                {% endif %}
+            </span></div>
+            <div class="ticket-row"><span class="label">Använd:</span> <span class="value">{{ times_used }} gånger</span></div>
         </div>
-        <div class="separator_line"></div>
-        <button type="use-ticket">Markera som använd</button>
+
+        <div class="separator-line-box">
+            <span class="separator-line"></span>
+        </div>
+
+        <div class="box" id="cannot-use-ticket-now-div" >
+            Biljetten kan endast användas vid konserttillfället.<!-- For displaying Ticket cannot be used now-->
+        </div>
+        
+        <button type="use-ticket" id="use-ticket-button">Använd biljett</button> <!-- For displaying button to use ticket-->
+
+        <div class="box" id="ticket-has-been-used-div">
+            <p>Biljetten har redan använts.</p> <!-- For displaying text saying ticket has been used-->
+        </div>
     </div>
-    <div class="logo">
-        <img src="{{ url_for('static', filename='logo-placeholder.png') }}" alt="Logo">
-    </div>
+
+    {% if not is_valid %}
+        <script>
+            const ticketAlreadyUsedDiv = document.getElementById('ticket-has-been-used-div')
+            ticketAlreadyUsedDiv.style.display = 'block'
+            console.log("is not valid")
+        </script>
+    {% elif is_concert %}
+        <script>
+            const useTicketButton = document.getElementById('use-ticket-button')
+            useTicketButton.style.display = 'inline';
+            console.log("Is concert")
+        </script>
+    {% else %}
+        <script>
+            const ticketCannotBeUsedDiv = document.getElementById('cannot-use-ticket-now-div')
+            ticketCannotBeUsedDiv.style.display = 'block'
+            console.log("not yet concert")
+        </script>
+    {% endif %}
 </body>
 </html>

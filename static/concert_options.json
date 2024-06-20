@@ -1,7 +1,25 @@
-{"konserter" : [
-    "Pauluskyrkan",
-    "Olars kyrka",
-    "Johanneskyrkan 1",
-    "Johanneskyrkan 2"
-]
+{
+    "konserter" : [
+        {
+            "Namn" : "Pauluskyrkan",
+            "Datum" : "2024-12-10",
+            "Tid" : "19:00:00"
+        },
+        {
+            "Namn" : "Olars kyrka",
+            "Datum" : "2024-12-13",
+            "Tid" : "19:00:00"
+        },
+        {
+            "Namn" : "Johanneskyrkan 1",
+            "Datum" : "2024-12-16",
+            "Tid" : "18:00:00"
+        },
+        {
+            "Namn" : "Johanneskyrkan 2",
+            "Datum" : "2024-12-16",
+            "Tid" : "20:30:00"
+        }
+
+    ]
 }
