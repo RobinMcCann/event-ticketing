@@ -3,10 +3,26 @@ from flask import jsonify
 import json
 import hmac
 import uuid
+import sys
 import hashlib
+import pytz
+from datetime import datetime
 
 from app import db
 from app.utils.models import Ticket
+
+# Set up logging
+import logging
+# Configure the root logger
+logging.basicConfig(
+    level=logging.DEBUG,  # Adjust the level as needed (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)  # Ensure logs are written to stdout
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 
 TRANSACTION_SECRET_KEY = os.getenv('TRANSACTION_SECRET_KEY')
@@ -23,7 +39,6 @@ def validate_ticket(transaction_hmac):
                 'seller_name' : ticket.seller_name,
                 'concert' : ticket.concert,
                 'num_tickets' : ticket.num_tickets,
-                'ticket_valid' : True,
                 'times_used' : ticket.times_used
             }, 200
         
@@ -31,6 +46,34 @@ def validate_ticket(transaction_hmac):
             return {'status': 'invalid_hmac'}, 403
     else:
         return {'status': 'invalid'}, 404
+
+
+def get_concert_time(concert):
+    options_file = os.path.join("/flask-app/static/concert_options.json")
+    with open(options_file, 'r') as file:
+        options = json.load(file)
+    
+    concerts = options['konserter']
+
+    def find_concert(name):
+        for concert in concerts:
+            if concert["Namn"] == name:
+                return concert
+        return None  # Return None if not found
+
+    concert_data = find_concert(concert)
+    if concert_data is None:
+        return jsonify({'status', 'Concert not found'}), 404
+    
+    concert_date = concert_data['Datum']
+    concert_time = concert_data['Tid']
+
+    concert_datetime = datetime.strptime(f"{concert_date} {concert_time}", r"%Y-%m-%d %H:%M:%S")
+
+    tz = pytz.timezone('Europe/Helsinki')
+    concert_datetime = concert_datetime.replace(tzinfo=tz)
+
+    return concert_datetime
 
 
 
