@@ -8,8 +8,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="container-header-1">Akademens och Lyrans</h1>
-        <h2 id="container-header-2">Biljettbeställning</h2>
+        <h1 id="container-header-1">Akademens och Lyrans biljettbeställning</h1>
         <p id="container-instructions">Fyll i ditt namn, din epost-address, köparens namn och hur många biljetter hen vill ha. Du kan bara beställa biljetter åt en kund, för en konsert, och högst 8 biljetter åt gången.</p>
         <form id="ticketForm">
             <input type="text" id="firstName" placeholder="Förnamn" required>
@@ -32,7 +31,7 @@
             const response = await fetch('/dropdown_options');
             const data = await response.json();
             const dropdown = document.getElementById('concert-dropdown');
-            
+
             data.konserter.forEach(konsert => {
                 const opt = document.createElement('option');
                 opt.value = konsert;
@@ -58,7 +57,7 @@
         document.addEventListener('DOMContentLoaded', loadDropdownOptions);
 
 
-        document.getElementById('ticketForm').addEventListener('submit', async function(event) {
+        async function createTicket(event) {
             event.preventDefault();
 
             const firstName = document.getElementById('firstName').value;
@@ -94,8 +93,6 @@
                 if (response.ok) {
                     const h1 = document.getElementById("container-header-1")
                     h1.style.display = 'none';
-                    const h2 = document.getElementById("container-header-2")
-                    h2.style.display = 'none';
                     const p = document.getElementById("container-instructions")
                     p.style.display = 'none';
                     const form = document.getElementById("ticketForm")
@@ -126,7 +123,9 @@
                 responseDiv.className = 'response error';
                 responseDiv.style.display = 'block';
             }
-});
+        }
+
+        document.getElementById('ticketForm').addEventListener('submit', createTicket);
     </script>
 </body>
 </html>
