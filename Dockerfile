@@ -13,6 +13,8 @@ RUN pip install --no-cache-dir -r /flask-app/requirements.txt
 # Expose port
 EXPOSE 5000
 
+ENV PYTHONUNBUFFERED=1
+
 # Command to run the application, first initializing DB
 # This is overruled by the command in docker-compose.yml
 #CMD ["python", "-m", "app.initialize_db"]
