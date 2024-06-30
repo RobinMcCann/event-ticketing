@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Ticket</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='view_ticket.css') }}">
+</head>
+<body>
+    <div class="logo-container">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo-placeholder.png') }}" alt="Logo">
+        </div>
+    </div>
+    <div class="container">
+        <div class="view_ticket" id="ticket_view_div">
+            <div class="ticket-row"><span class="label">Kund:</span> <span class="value">{{ buyer_name }}</span></div>
+            <div class="ticket-row"><span class="label">Korist:</span> <span class="value">{{ seller_name }}</span></div>
+            <div class="ticket-row"><span class="label">Konsert:</span> <span class="value">{{ concert }}</span></div>
+            <div class="ticket-row"><span class="label">Antal biljetter:</span> <span class="value">{{ num_tickets }}</span></div>
+            <div class="ticket-row"><span class="label">Använd:</span> <span class="value">{{ times_used }} gånger</span></div>
+            <div class="ticket-row"><span class="label">Giltig:</span> <span class="value">
+                {% if is_valid %}
+                    Ja
+                {% else %} 
+                    Nej
+                {% endif %}
+            </span></div>
+        </div>
+        
+        <div class="separator-line-box">
+            <span class="separator-line"></span>
+        </div>
+        <!-- Render Button or textbox depending on state -->
+        {% if not is_valid %}
+        <div class="box">
+            <p>Biljetten har redan använts.</p> <!-- For displaying text saying ticket has been used-->
+        </div>
+        {% elif is_concert %}
+        <form action="{{ url_for('routes.mark_ticket_as_used', transaction_hmac = transaction_hmac) }}" method="post">
+            <button type="submit">Använd biljett</button> <!-- For displaying button to use ticket-->
+        </form>
+        {% else %}
+        <div class="box">
+            Biljetten kan endast användas vid konserttillfället.<!-- For displaying Ticket cannot be used now-->
+        </div>
+        {% endif %}  
+    </div>
+</body>
+</html>

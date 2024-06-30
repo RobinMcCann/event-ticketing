@@ -1,0 +1,8 @@
+tickets.db
+.env
+ideas.txt
+.vscode/
+__pycache__/
+*.code-workspace
+
+*.pyc

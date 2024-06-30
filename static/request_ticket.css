@@ -52,6 +52,13 @@ select {
     border: 1px solid #ccc;
     border-radius: 4px;
 }
+select option:disabled {
+    color: grey;
+}
+/* Ensure the color changes back to black when a valid option is selected */
+select:not(:disabled):not(:checked) option {
+    color: black;
+}
 button {
     margin-top: 20px;
     width: 100%;

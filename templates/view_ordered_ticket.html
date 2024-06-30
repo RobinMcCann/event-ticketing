@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biljettbeställning</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='view_ordered_ticket.css') }}">
+</head>
+<body>
+    <div class="container">
+    {% if succeeded %}
+        <h2>Biljetter skapade!</h2>
+        <div class="response success">
+            <p>Här är din biljettlänk:</p> 
+            <p><a href="{{ ticket_url }}" target="_blank"> {{ ticket_url }}</a></p>
+            <p><i>Korist:</i> {{ seller_name }}</p>
+            <p><i>Kund:</i> {{ buyer_name }}</p>
+            <p><i>Konsert:</i> {{ concert }}</p>
+            <p><i>Antal biljetter:</i> {{ num_tickets }}</p>
+            <p><i>Transaktions-ID:</i> {{ transaction_id }}</p>
+        </div>
+    {% else %} 
+        <div class="response error">
+            Något gick fel.
+        </div>
+    {% endif %}
+    </div>
+</body>
