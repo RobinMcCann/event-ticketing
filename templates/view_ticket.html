@@ -37,7 +37,7 @@
             <p>Biljetten har redan använts.</p> <!-- For displaying text saying ticket has been used-->
         </div>
         {% elif is_concert %}
-        <form action="{{ url_for('routes.mark_ticket_as_used', transaction_hmac = transaction_hmac) }}" method="post">
+        <form action="{{ url_for('tickets.mark_ticket_as_used', transaction_hmac = transaction_hmac) }}" method="post">
             <button type="submit">Använd biljett</button> <!-- For displaying button to use ticket-->
         </form>
         {% else %}

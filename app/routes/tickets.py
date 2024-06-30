@@ -1,16 +1,13 @@
+from crypt import methods
+import email
 from flask import (render_template, 
                    redirect,
                    url_for,
                    request, 
-                   jsonify, 
                    Blueprint,
                    )
+from flask_login import login_user, login_required, logout_user
 from datetime import datetime, timedelta
-import os
-import json
-import hmac
-import uuid
-import hashlib
 import sys
 import pytz
  
@@ -18,6 +15,15 @@ from app.utils.utils import (create_ticket,
                              validate_ticket,
                              claim_ticket,
                              get_concert_time)
+
+from app.utils.forms import LoginForm, RegisterForm
+from app import bcrypt, login_manager
+from app.utils.models import AppUser
+from app import db
+
+tickets = Blueprint('tickets', __name__)
+
+login_manager.login_view = 'login'
 
 # Set up logging
 import logging
@@ -31,17 +37,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-bp = Blueprint('routes', __name__)
+# TODO: make dashboard.  If user is logged in, '/' redirects to dashboard -> view tickets, order more.
+# If user is not logged in, '/' redirects to '/login'
 
-@bp.route('/')
-def index():
-    return render_template('login.html')
 
-@bp.route('/order_ticket')
+
+@tickets.route('/order_ticket')
+@login_required
 def order_ticket():
     return render_template('order_ticket.html')
 
-@bp.route('/view_ticket/<transaction_hmac>', methods=['GET'])
+@tickets.route('/view_ticket/<transaction_hmac>', methods=['GET'])
 def view_ticket(transaction_hmac):
 
     ticket, status = validate_ticket(transaction_hmac)
@@ -86,11 +92,9 @@ def view_ticket(transaction_hmac):
 
     return None
 
-@bp.route('/ticket_created')
-def ticket_created():
-    data=request.json    
 
-@bp.route('/request_ticket', methods=['POST'])
+@tickets.route('/request_ticket', methods=['GET', 'POST'])
+@login_required
 def request_ticket():
 
     data = request.form
@@ -103,10 +107,10 @@ def request_ticket():
     try:
 
         ticket_url, transaction_id = create_ticket(seller_name=seller_name,
-                                                seller_email=seller_email,
-                                                buyer_name=buyer_name,
-                                                concert=concert,
-                                                num_tickets=num_tickets)
+                                                  seller_email=seller_email,
+                                                  buyer_name=buyer_name,
+                                                  concert=concert,
+                                                  num_tickets=num_tickets)
 
         return render_template('view_ordered_ticket.html',
                                 ticket_url = ticket_url,
@@ -123,24 +127,13 @@ def request_ticket():
                                succeeded = False)
 
 
-@bp.route('/dropdown_options', methods=['GET'])
-def concert_options():
-    options_file = os.path.join("/flask-app/static/concert_options.json")
-    with open(options_file, 'r') as file:
-        options = json.load(file)
-    concerts = [concert['Namn'] for concert in options['konserter']]
-
-    return jsonify({
-        "konserter": concerts
-    }), 200
-
-@bp.route('/claim_ticket/<transaction_hmac>', methods=['POST'])
+@tickets.route('/claim_ticket/<transaction_hmac>', methods=['POST'])
 def mark_ticket_as_used(transaction_hmac):
 
     times_used, max_uses, overused = claim_ticket(transaction_hmac)
 
     if overused:
-        return redirect(url_for('view_ticket', transaction_hmac = transaction_hmac))
+        return redirect(url_for('tickets.view_ticket', transaction_hmac = transaction_hmac))
 
     # TODO: Return a page
     if times_used is None:
@@ -150,3 +143,9 @@ def mark_ticket_as_used(transaction_hmac):
         info, status =  f"Biljetten har nu använts {times_used}/{max_uses} gånger.", 200
 
     return render_template('ticket_used.html', info = info, status = status)
+
+@tickets.route('/view_tickets', methods=['GET'])
+@login_required
+def view_tickets():
+    # TODO: implement
+    return "HERE YOU CAN SEE YOUR TICKETS"

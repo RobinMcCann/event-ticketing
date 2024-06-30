@@ -7,7 +7,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from app import create_app, db
-from app.utils.models import Ticket
+from app.utils.models import Ticket, AppUser
 
 # Set up logging
 import logging
@@ -35,7 +35,10 @@ def utilize_db_lock(func):
             time.sleep(1)  # Wait if lock file exists
         open(LOCK_FILE, 'w').close()
 
-        func()
+        try:
+            func()
+        except Exception as e:
+            logger.debug(e)
 
         # Release the lock
         os.remove(LOCK_FILE)
@@ -45,6 +48,7 @@ def utilize_db_lock(func):
 
 @utilize_db_lock
 def initialize_db():
+    logger.debug("SSS")
     logger.info("Initializing database.")
     app = create_app()
     # Your database initialization logic here
@@ -52,11 +56,15 @@ def initialize_db():
         engine = sqlalchemy.create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
         inspector = sqlalchemy.inspect(engine)
 
+        logger.debug("Something")
+
         # Check if any table in the metadata is missing
         all_tables_exist = all(table_name in inspector.get_table_names() for table_name in db.metadata.tables.keys())
         
         if not all_tables_exist:
             db.create_all()
+
+        logger.debug("Something2")
     
     logger.info("Database initialized.")
 

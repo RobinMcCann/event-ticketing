@@ -10,7 +10,7 @@
     <div class="container">
         <h1 id="container-header-1">Akademens och Lyrans biljettbeställning</h1>
         <p id="container-instructions">Fyll i ditt namn, din epost-address, köparens namn och hur många biljetter hen vill ha. Du kan bara beställa biljetter åt en kund, för en konsert, och högst 8 biljetter åt gången.</p>
-        <form id="ticketForm" action="{{ url_for('routes.request_ticket') }}" method="post">
+        <form id="ticketForm" action="{{ url_for('tickets.request_ticket') }}" method="post">
             <input type="text" id="firstName" name="firstName" placeholder="Förnamn" required>
             <input type="text" id="lastName" name="lastName" placeholder="Efternamn" required>
             <input type="email" id="email" name="email" placeholder="Din e-postaddress" required>
