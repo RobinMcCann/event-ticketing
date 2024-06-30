@@ -1,8 +1,9 @@
-import pstats
 from flask import (render_template, 
+                   redirect,
+                   url_for,
                    request, 
                    jsonify, 
-                   Blueprint
+                   Blueprint,
                    )
 from datetime import datetime, timedelta
 import os
@@ -13,10 +14,10 @@ import hashlib
 import sys
 import pytz
  
-from app.utils.utils import (validate_ticket,
-                             get_concert_time
-                             )
-from app.utils.models import Ticket
+from app.utils.utils import (create_ticket,
+                             validate_ticket,
+                             claim_ticket,
+                             get_concert_time)
 
 # Set up logging
 import logging
@@ -34,7 +35,11 @@ bp = Blueprint('routes', __name__)
 
 @bp.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('login.html')
+
+@bp.route('/order_ticket')
+def order_ticket():
+    return render_template('order_ticket.html')
 
 @bp.route('/view_ticket/<transaction_hmac>', methods=['GET'])
 def view_ticket(transaction_hmac):
@@ -42,9 +47,9 @@ def view_ticket(transaction_hmac):
     ticket, status = validate_ticket(transaction_hmac)
 
     if status == 403:
-        return ticket
+        return ticket # TODO: handling
     elif status == 404:
-        return ticket
+        return ticket # TODO: handling
     elif status == 200:
 
         concert = ticket['concert']
@@ -60,7 +65,7 @@ def view_ticket(transaction_hmac):
             "is_concert" : False # Placeholder, can turn True
         })
 
-        if ticket['times_used'] >= 1:
+        if ticket['times_used'] >= ticket['num_tickets']:
             # Return Ticket has already been claimed
             ticket_info["is_valid"] = False
 
@@ -71,17 +76,19 @@ def view_ticket(transaction_hmac):
 
         # Render Ticket
 
-        # For debugging
+        # For debug
         ticket_info['is_concert'] = True
 
-        logger.debug(ticket_info)
+        ticket_info['transaction_hmac'] = transaction_hmac
 
         return render_template('view_ticket.html',
                                 **ticket_info)
 
     return None
 
-    
+@bp.route('/ticket_created')
+def ticket_created():
+    data=request.json    
 
 @bp.route('/request_ticket', methods=['POST'])
 def request_ticket():
@@ -93,28 +100,11 @@ def request_ticket():
     num_tickets = data['num_tickets']
     transaction_id = str(uuid.uuid4())
 
-    TRANSACTION_SECRET_KEY = os.getenv('TRANSACTION_SECRET_KEY')
-
-    # Generate HMAC for the transaction ID
-    transaction_hmac = hmac.new(TRANSACTION_SECRET_KEY.encode(), transaction_id.encode(), hashlib.sha256).hexdigest()
-    
-    new_ticket = Ticket(seller_name=seller_name,
-                        buyer_name=buyer_name,
-                        concert=concert,
-                        num_tickets=num_tickets,
-                        transaction_id=transaction_id,
-                        transaction_hmac=transaction_hmac)
-
-    from app import db
-
-    db.session.add(new_ticket)
-    db.session.commit()
-
-    # Generate URL with the HMAC
-    ticket_url = f"http://localhost:5000/view_ticket/{transaction_hmac}"
-    
-    # Return ticket details and link
-    print(ticket_url)
+    ticket_url = create_ticket(seller_name=seller_name,
+                               seller_email=seller_email,
+                               buyer_name=buyer_name,
+                               concert=concert,
+                               num_tickets=num_tickets)
 
     return jsonify({
         'transaction_id': transaction_id, 
@@ -137,3 +127,19 @@ def concert_options():
         "konserter": concerts
     }), 200
 
+@bp.route('/claim_ticket/<transaction_hmac>', methods=['POST'])
+def mark_ticket_as_used(transaction_hmac):
+
+    times_used, max_uses, overused = claim_ticket(transaction_hmac)
+
+    if overused:
+        return redirect(url_for('view_ticket', transaction_hmac = transaction_hmac))
+
+    # TODO: Return a page
+    if times_used is None:
+
+        info, status = "Biljetten hittades inte.", 404
+    else:
+        info, status =  f"Biljetten har nu använts {times_used}/{max_uses} gånger.", 200
+
+    return render_template('ticket_used.html', info = info, status = status)
