@@ -47,6 +47,54 @@ def validate_ticket(transaction_hmac):
     else:
         return {'status': 'invalid'}, 404
 
+def create_ticket(seller_name: str,
+                  seller_email: str,
+                  buyer_name: str,
+                  concert: str,
+                  num_tickets: int) -> str:
+
+    transaction_id = str(uuid.uuid4())
+
+    # Generate HMAC for the transaction ID
+    transaction_hmac = hmac.new(TRANSACTION_SECRET_KEY.encode(), transaction_id.encode(), hashlib.sha256).hexdigest()
+
+    new_ticket = Ticket(seller_name=seller_name,
+                        buyer_name=buyer_name,
+                        concert=concert,
+                        num_tickets=num_tickets,
+                        transaction_id=transaction_id,
+                        transaction_hmac=transaction_hmac)
+
+    db.session.add(new_ticket)
+    db.session.commit()
+
+    # Generate URL with the HMAC
+    ticket_url = f"http://localhost:5000/view_ticket/{transaction_hmac}"
+
+    return ticket_url
+
+def claim_ticket(transaction_hmac):
+
+    ticket = Ticket.query.filter_by(transaction_hmac=transaction_hmac).first()
+
+    if not ticket:
+        return None
+
+    max_uses = ticket.num_tickets
+
+    if ticket.times_used >= ticket.num_tickets:
+        
+        overused = True
+        return ticket.times_used, max_uses, overused
+    else:
+
+        ticket.times_used += 1
+        db.session.commit()
+
+        overused = False
+
+        return ticket.times_used, max_uses, overused
+
 
 def get_concert_time(concert):
     options_file = os.path.join("/flask-app/static/concert_options.json")
