@@ -92,28 +92,35 @@ def ticket_created():
 
 @bp.route('/request_ticket', methods=['POST'])
 def request_ticket():
-    data = request.json
-    seller_name = data['seller_name']
-    seller_email = data['seller_email']
-    buyer_name = data['buyer_name']
-    concert = data['concert']
-    num_tickets = data['num_tickets']
-    transaction_id = str(uuid.uuid4())
 
-    ticket_url = create_ticket(seller_name=seller_name,
-                               seller_email=seller_email,
-                               buyer_name=buyer_name,
-                               concert=concert,
-                               num_tickets=num_tickets)
+    data = request.form
+    seller_name = str(data['firstName']) + str(data['lastName'])
+    seller_email = str(data['email'])
+    buyer_name = str(data['buyerName'])
+    concert = str(data['concert-dropdown'])
+    num_tickets = int(data['numTickets'])
 
-    return jsonify({
-        'transaction_id': transaction_id, 
-        'seller_name': seller_name, 
-        'buyer_name' : buyer_name,
-        'concert' : concert,
-        'num_tickets': num_tickets, 
-        'ticket_url': ticket_url
-        }), 201
+    try:
+
+        ticket_url, transaction_id = create_ticket(seller_name=seller_name,
+                                                seller_email=seller_email,
+                                                buyer_name=buyer_name,
+                                                concert=concert,
+                                                num_tickets=num_tickets)
+
+        return render_template('view_ordered_ticket.html',
+                                ticket_url = ticket_url,
+                                seller_name = seller_name,
+                                buyer_name = buyer_name,
+                                concert = concert,
+                                num_tickets = num_tickets,
+                                transaction_id = transaction_id,
+                                succeeded = True)
+
+    except Exception as e:
+        logger.debug(e)
+        return render_template('view_ordered_ticket.html',
+                               succeeded = False)
 
 
 @bp.route('/dropdown_options', methods=['GET'])

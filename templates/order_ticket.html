@@ -10,19 +10,17 @@
     <div class="container">
         <h1 id="container-header-1">Akademens och Lyrans biljettbeställning</h1>
         <p id="container-instructions">Fyll i ditt namn, din epost-address, köparens namn och hur många biljetter hen vill ha. Du kan bara beställa biljetter åt en kund, för en konsert, och högst 8 biljetter åt gången.</p>
-        <form id="ticketForm">
-            <input type="text" id="firstName" placeholder="Förnamn" required>
-            <input type="text" id="lastName" placeholder="Efternamn" required>
-            <input type="email" id="email" placeholder="Din e-postaddress" required>
-            <input type="text" id="buyerName" placeholder="Kundens namn" required>
-            <select id="concert-dropdown" required>
+        <form id="ticketForm" action="{{ url_for('routes.request_ticket') }}" method="post">
+            <input type="text" id="firstName" name="firstName" placeholder="Förnamn" required>
+            <input type="text" id="lastName" name="lastName" placeholder="Efternamn" required>
+            <input type="email" id="email" name="email" placeholder="Din e-postaddress" required>
+            <input type="text" id="buyerName" name="buyerName" placeholder="Kundens namn" required>
+            <select id="concert-dropdown" name="concert-dropdown" required>
                 <option value="" disabled selected>Select a concert</option>
             </select>
-            <input type="number" id="numTickets" placeholder="Antal biljetter" min="1" max="8" required>
+            <input type="number" id="numTickets" name="numTickets" placeholder="Antal biljetter" min="1" max="8" required>
             <button type="submit">Skapa biljettlänk</button>
         </form>
-        <h2 id="responseTitle"></h2>
-        <div class="response" id="response"></div>
     </div>
 
     <script>
@@ -55,77 +53,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', loadDropdownOptions);
-
-
-        async function createTicket(event) {
-            event.preventDefault();
-
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const email = document.getElementById('email').value;
-            const buyerName = document.getElementById('buyerName').value;
-            const numTickets = document.getElementById('numTickets').value;
-            const concert = document.getElementById('concert-dropdown').value;
-
-            const responseTitle = document.getElementById('responseTitle')
-            const responseDiv = document.getElementById('response');
-
-            responseTitle.style.display = 'none'
-            responseDiv.style.display = 'none';
-
-            try {
-                const response = await fetch('/request_ticket', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        seller_name: `${firstName} ${lastName}`,
-                        seller_email: email,
-                        concert: concert,
-                        buyer_name: buyerName,
-                        num_tickets: numTickets
-                    })
-                });
-
-                const responseData = await response.json();
-
-                if (response.ok) {
-                    const h1 = document.getElementById("container-header-1")
-                    h1.style.display = 'none';
-                    const p = document.getElementById("container-instructions")
-                    p.style.display = 'none';
-                    const form = document.getElementById("ticketForm")
-                    form.style.display = 'none';
-
-                    responseTitle.textContent = 'Biljetter skapade!'
-                    responseDiv.innerHTML = `
-                        <p>Här är din biljettlänk:</p> 
-                        <p><a href="${responseData.ticket_url}" target="_blank">${responseData.ticket_url}</a></p>
-                        <p><i>Korist:</i> ${responseData.seller_name}</p>
-                        <p><i>Kund:</i> ${responseData.buyer_name}</p>
-                        <p><i>Konsert:</i> ${responseData.concert}</p>
-                        <p><i>Antal biljetter:</i> ${responseData.num_tickets}</p>
-                        <p><i>Transaktions-ID:</i> ${responseData.transaction_id}</p>
-                    `;
-                    responseDiv.className = 'response success';
-                } else {
-                    responseDiv.textContent = `Error: ${responseData.message || 'Något gick fel.'}`;
-                    responseDiv.className = 'response error';
-                }
-
-                responseTitle.style.display = 'inline'
-                responseDiv.style.display = 'block';
-
-            } catch (error) {
-                console.error('Error:', error);
-                responseDiv.textContent = 'Något gick fel vid kommunikation med servern.';
-                responseDiv.className = 'response error';
-                responseDiv.style.display = 'block';
-            }
-        }
-
-        document.getElementById('ticketForm').addEventListener('submit', createTicket);
     </script>
 </body>
 </html>

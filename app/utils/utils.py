@@ -71,7 +71,7 @@ def create_ticket(seller_name: str,
     # Generate URL with the HMAC
     ticket_url = f"http://localhost:5000/view_ticket/{transaction_hmac}"
 
-    return ticket_url
+    return ticket_url, transaction_id
 
 def claim_ticket(transaction_hmac):
 
