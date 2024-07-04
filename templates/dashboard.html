@@ -11,7 +11,7 @@
         <h1>Välkommen till biljettbeställaren.</h1>
         <h2>Välj nedan vad du vill göra</h2>
         <button onclick="window.location.href='{{ url_for('tickets.order_ticket') }}';" class="button">Beställ biljetter</button>
-        <button onclick="window.location.href='{{ url_for('tickets.view_tickets') }}';" class="button">Visa dina biljetter</button>
+        <button onclick="window.location.href='{{ url_for('tickets.view_user_tickets') }}';" class="button">Visa dina biljetter</button>
         <button onclick="window.location.href='{{ url_for('auth.change_password') }}';" class="button">Ändra lösenord</button>
         <button onclick="window.location.href='{{ url_for('auth.logout') }}';" class="button">Logga ut</button>
     </div>
