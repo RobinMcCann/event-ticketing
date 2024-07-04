@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biljettbeställning</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='view_ordered_ticket.css') }}">
+</head>
+<body>
+    <h1> {{ user.username }}s biljetter</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Beställare</th>
+                <th>Konsert</th>
+                <th>Antal biljetter</th>
+                <th>Länk</th>
+                <!-- Add more columns as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+                <tr>
+                    <td>{{ ticket.buyer_name }}</td>
+                    <td>{{ ticket.concert }}</td>
+                    <td>{{ ticket.num_tickets }}</td>
+                    <td><a href="http://localhost:5000/view_ticket/{{ ticket.transaction_hmac }}">http://localhost:5000/view_ticket/{{ ticket.transaction_hmac }}</a></td>
+                    <!-- Add more columns as needed -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
