@@ -16,6 +16,8 @@ from app.utils.utils import (create_ticket,
                              claim_ticket,
                              get_concert_time)
 
+from app.utils.models import Ticket
+
 from app.utils.forms import TicketForm, ClaimTicketForm
 from app import login_manager
 
@@ -145,8 +147,13 @@ def mark_ticket_as_used(transaction_hmac):
 
     return render_template('ticket_used.html', info = info, status = status)
 
-@tickets.route('/view_tickets', methods=['GET'])
+
+@tickets.route('/view_user_tickets', methods=['GET', 'POST'])
 @login_required
-def view_tickets():
-    # TODO: implement
-    return "HERE YOU CAN SEE YOUR TICKETS"
+def view_user_tickets():
+    
+    # Here also make admin see and able to manage all tickets
+
+    tickets = Ticket.query.filter_by(user_id = current_user.id)
+
+    return render_template("view_all_tickets.html", user=current_user, tickets=tickets)
