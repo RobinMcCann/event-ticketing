@@ -6,6 +6,7 @@ from flask_bcrypt import Bcrypt
 from flask_wtf import CSRFProtect
 from flask_login import LoginManager
 import os
+from datetime import timedelta
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -20,17 +21,16 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config['SECRET_KEY'] = os.getenv('USER_SECRET_KEY')
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=int(os.getenv('SESSION_LOGOUT_TIMEOUT_MINUTES')))
     
     CORS(app)  # Enable CORS
     # Register blueprints
 
     from app.routes.tickets import tickets as tickets_bp
     from app.routes.auth import auth as auth_bp
-    from app.routes.utils import utils as utils_bp
     from app.routes.main import main as main_bp
     app.register_blueprint(tickets_bp)
     app.register_blueprint(auth_bp)
-    app.register_blueprint(utils_bp)
     app.register_blueprint(main_bp)
 
     db.init_app(app)

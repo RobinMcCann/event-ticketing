@@ -18,6 +18,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+
+# TODO: make dashboard.  If user is logged in, '/' redirects to dashboard -> view tickets, order more.
+# If user is not logged in, '/' redirects to '/login'
+
+
 @main.route('/')
 @login_required
 def dashboard():

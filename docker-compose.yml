@@ -16,6 +16,8 @@ services:
       TRANSACTION_SECRET_KEY: "my_secret_key"
       DATABASE_URL: "postgresql://flaskuser:flaskpassword@db:5432/flaskdb"
       USER_SECRET_KEY: "my_secret_key"
+      MAX_TICKETS_PER_ORDER: 8
+      SESSION_LOGOUT_TIMEOUT_MINUTES: 5
 
 
   db:

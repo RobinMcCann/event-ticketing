@@ -1,25 +1,23 @@
 from crypt import methods
-import email
 from flask import (render_template, 
                    redirect,
                    url_for,
                    request, 
                    Blueprint,
                    )
-from flask_login import login_user, login_required, logout_user
+from flask_login import login_required, current_user
 from datetime import datetime, timedelta
 import sys
 import pytz
+import os
  
 from app.utils.utils import (create_ticket,
                              validate_ticket,
                              claim_ticket,
                              get_concert_time)
 
-from app.utils.forms import LoginForm, RegisterForm
-from app import bcrypt, login_manager
-from app.utils.models import AppUser
-from app import db
+from app.utils.forms import TicketForm, ClaimTicketForm
+from app import login_manager
 
 tickets = Blueprint('tickets', __name__)
 
@@ -37,18 +35,50 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# TODO: make dashboard.  If user is logged in, '/' redirects to dashboard -> view tickets, order more.
-# If user is not logged in, '/' redirects to '/login'
+MAX_TICKETS_PER_ORDER = os.getenv('MAX_TICKETS_PER_ORDER')
 
-
-
-@tickets.route('/order_ticket')
+@tickets.route('/order_ticket', methods=['GET', 'POST'])
 @login_required
 def order_ticket():
-    return render_template('order_ticket.html')
 
-@tickets.route('/view_ticket/<transaction_hmac>', methods=['GET'])
+    form = TicketForm()
+
+    if form.validate_on_submit():
+        buyer_name = form.buyername.data
+        concert = form.concert.data
+        num_tickets = form.number_of_tickets.data
+
+        try:
+
+            ticket_url, transaction_id = create_ticket(buyer_name=buyer_name,
+                                                       concert=concert,
+                                                       num_tickets=num_tickets)
+
+            seller_name = str(current_user.first_name) + "" + str(current_user.last_name)
+
+            return render_template('view_ordered_ticket.html',
+                                    ticket_url = ticket_url,
+                                    seller_name = seller_name,
+                                    buyer_name = buyer_name,
+                                    concert = concert,
+                                    num_tickets = num_tickets,
+                                    transaction_id = transaction_id,
+                                    succeeded = True)
+        except Exception as e:
+            logger.debug(e)
+            render_template('view_ordered_ticket.html',
+                            succeeded=False)
+
+    return render_template('order_ticket.html', form=form, max_tickets = MAX_TICKETS_PER_ORDER)
+
+@tickets.route('/view_ticket/<transaction_hmac>', methods=['GET', 'POST'])
 def view_ticket(transaction_hmac):
+
+    claim_ticket = ClaimTicketForm()
+
+    if claim_ticket.validate_on_submit():
+        return redirect(url_for('tickets.mark_ticket_as_used', transaction_hmac=transaction_hmac))
+
 
     ticket, status = validate_ticket(transaction_hmac)
 
@@ -60,6 +90,10 @@ def view_ticket(transaction_hmac):
 
         concert = ticket['concert']
         concert_time = get_concert_time(concert)
+        
+        if concert_time is None:
+            # TODO: handling
+            pass
 
         current_time = datetime.now(tz=pytz.utc)
         # Convert current time to same timezone as concert time
@@ -87,47 +121,14 @@ def view_ticket(transaction_hmac):
 
         ticket_info['transaction_hmac'] = transaction_hmac
 
+        ticket_info['form'] = claim_ticket
+
         return render_template('view_ticket.html',
                                 **ticket_info)
 
     return None
 
-
-@tickets.route('/request_ticket', methods=['GET', 'POST'])
-@login_required
-def request_ticket():
-
-    data = request.form
-    seller_name = str(data['firstName']) + str(data['lastName'])
-    seller_email = str(data['email'])
-    buyer_name = str(data['buyerName'])
-    concert = str(data['concert-dropdown'])
-    num_tickets = int(data['numTickets'])
-
-    try:
-
-        ticket_url, transaction_id = create_ticket(seller_name=seller_name,
-                                                  seller_email=seller_email,
-                                                  buyer_name=buyer_name,
-                                                  concert=concert,
-                                                  num_tickets=num_tickets)
-
-        return render_template('view_ordered_ticket.html',
-                                ticket_url = ticket_url,
-                                seller_name = seller_name,
-                                buyer_name = buyer_name,
-                                concert = concert,
-                                num_tickets = num_tickets,
-                                transaction_id = transaction_id,
-                                succeeded = True)
-
-    except Exception as e:
-        logger.debug(e)
-        return render_template('view_ordered_ticket.html',
-                               succeeded = False)
-
-
-@tickets.route('/claim_ticket/<transaction_hmac>', methods=['POST'])
+@tickets.route('/claim_ticket/<transaction_hmac>', methods=['GET', 'POST'])
 def mark_ticket_as_used(transaction_hmac):
 
     times_used, max_uses, overused = claim_ticket(transaction_hmac)

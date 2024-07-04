@@ -4,55 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biljettbeställning</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='request_ticket.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='order_ticket.css') }}">
 </head>
 <body>
     <div class="container">
         <h1 id="container-header-1">Akademens och Lyrans biljettbeställning</h1>
-        <p id="container-instructions">Fyll i ditt namn, din epost-address, köparens namn och hur många biljetter hen vill ha. Du kan bara beställa biljetter åt en kund, för en konsert, och högst 8 biljetter åt gången.</p>
-        <form id="ticketForm" action="{{ url_for('tickets.request_ticket') }}" method="post">
-            <input type="text" id="firstName" name="firstName" placeholder="Förnamn" required>
-            <input type="text" id="lastName" name="lastName" placeholder="Efternamn" required>
-            <input type="email" id="email" name="email" placeholder="Din e-postaddress" required>
-            <input type="text" id="buyerName" name="buyerName" placeholder="Kundens namn" required>
-            <select id="concert-dropdown" name="concert-dropdown" required>
-                <option value="" disabled selected>Select a concert</option>
-            </select>
-            <input type="number" id="numTickets" name="numTickets" placeholder="Antal biljetter" min="1" max="8" required>
-            <button type="submit">Skapa biljettlänk</button>
+        <p id="container-instructions">
+            Fyll i ditt namn, din epost-address, köparens namn och hur många biljetter hen vill ha. Du kan bara beställa biljetter åt en kund, för en konsert, och högst {{ max_tickets }} biljetter åt gången.
+        </p>
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            {{ form.buyername(class_ = "input") }}
+            {{ form.concert(class_ = "select") }}
+            {{ form.number_of_tickets(class_ = "input") }}
+            {{ form.submit(class_ = "button") }}
         </form>
     </div>
-
-    <script>
-
-        async function loadDropdownOptions() {
-            const response = await fetch('/dropdown_options');
-            const data = await response.json();
-            const dropdown = document.getElementById('concert-dropdown');
-
-            data.konserter.forEach(konsert => {
-                const opt = document.createElement('option');
-                opt.value = konsert;
-                opt.textContent = konsert;
-                dropdown.appendChild(opt);
-            });
-
-            // Add event listener to change the color when a valid option is selected
-            dropdown.addEventListener('change', function() {
-                if (this.value === "Select a concert") {
-                    this.style.color = "gray";
-                } else {
-                    this.style.color = "black";
-                }
-            });
-
-            // Initial color set to gray if placeholder is selected
-            if (dropdown.value === "") {
-                dropdown.style.color = "gray";
-    }
-        }
-
-        document.addEventListener('DOMContentLoaded', loadDropdownOptions);
-    </script>
 </body>
 </html>

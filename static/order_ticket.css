@@ -35,7 +35,7 @@ p {
     margin-bottom: 20px;
 }
 input[type="text"], input[type="email"], input[type="number"] {
-    margin-top: 10px;
+    margin-bottom: 10px;
     padding: 10px;
     font-size: 16px;
     width: 100%;
@@ -44,7 +44,7 @@ input[type="text"], input[type="email"], input[type="number"] {
     border-radius: 4px;
 }
 select {
-    margin-top: 10px;
+    margin-bottom: 10px;
     padding: 10px;
     font-size: 16px;
     width: 100%;
@@ -59,27 +59,15 @@ select option:disabled {
 select:not(:disabled):not(:checked) option {
     color: black;
 }
-button {
-    margin-top: 20px;
+.button {
     width: 100%;
     padding: 10px;
-    background-color: #28a745;
+    background-color: #007BFF;
     color: white;
     border: none;
-    border-radius: 4px;
-    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
 }
-button:hover {
-    background-color: #218838;
-}
-.response {
-    text-align: center;
-    margin-top: 20px;
-    display: none;
-}
-.response.success {
-    color: #28a745;
-}
-.response.error {
-    color: #dc3545;
+.button:hover {
+    background-color: #0056b3;
 }

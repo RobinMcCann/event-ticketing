@@ -1,9 +1,13 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, EmailField
-from wtforms.validators import InputRequired, Length, ValidationError, Email, EqualTo
+from wtforms import StringField, PasswordField, SubmitField, EmailField, SelectField
+from wtforms.validators import InputRequired, Length, ValidationError, Email, EqualTo, NumberRange, Regexp
 
 from app.utils.models import AppUser
+from app.utils.utils import get_concerts
 
+import os
+
+MAX_TICKETS_PER_ORDER = os.getenv('MAX_TICKETS_PER_ORDER')
 
 class RegisterForm(FlaskForm):
     
@@ -48,3 +52,35 @@ class LoginForm(FlaskForm):
                              render_kw={'placeholder' : 'Lösenord'})
 
     submit = SubmitField('Logga in')
+
+class TicketForm(FlaskForm):
+
+    buyername = StringField(validators=[InputRequired("Ange beställarens namn."),
+                                        Length(min=4, max=80)],
+                            render_kw={'placeholder' : 'Beställarens namn'})
+
+    concerts = get_concerts()
+    concert_names = [("", "Välj konsert")] + [(concert['Namn'], concert['Namn']) for concert in concerts]
+
+    concert = SelectField(choices = concert_names,
+                          default = "Välj konsert",
+                          validators=[InputRequired("Välj en konsert")])
+
+    number_of_tickets = StringField(validators=[InputRequired(f"Ange hur många biljetter beställaren vill ha (max {MAX_TICKETS_PER_ORDER})."),
+                                                Regexp(r'^\d+$', message="Fyll i en giltig siffra.")],
+                                    render_kw={'placeholder' : f'Välj antal biljetter (1-{MAX_TICKETS_PER_ORDER})'})
+
+    def validate_number_of_tickets(self, n):
+        try:
+            n = int(n.data)
+            if not (1 <= n <= 8):
+                raise ValidationError(f"Du kan beställa 1-{MAX_TICKETS_PER_ORDER} biljetter åt gången.")
+        except (ValueError, TypeError):
+            raise ValidationError("Fyll i en giltig siffra.")
+
+    submit = SubmitField("Skapa biljettlänk")
+
+
+class ClaimTicketForm(FlaskForm):
+
+    claim = SubmitField("Använd biljett.")
