@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biljettbeställning</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Välkommen till biljettbeställaren.</h1>
+        <h2>Välj nedan vad du vill göra</h2>
+        <button onclick="window.location.href='{{ url_for('tickets.order_ticket') }}';" class="button">Beställ biljetter</button>
+        <button onclick="window.location.href='{{ url_for('tickets.view_tickets') }}';" class="button">Visa dina biljetter</button>
+        <button onclick="window.location.href='{{ url_for('auth.change_password') }}';" class="button">Ändra lösenord</button>
+        <button onclick="window.location.href='{{ url_for('auth.logout') }}';" class="button">Logga ut</button>
+    </div>
+</body>

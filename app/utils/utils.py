@@ -9,7 +9,9 @@ import pytz
 from datetime import datetime
 
 from app import db
-from app.utils.models import Ticket
+from app.utils.models import Ticket, AppUser
+
+from flask_login import current_user
 
 # Set up logging
 import logging
@@ -32,11 +34,15 @@ def validate_ticket(transaction_hmac):
     if ticket:
         expected_hmac = hmac.new(TRANSACTION_SECRET_KEY.encode(), ticket.transaction_id.encode(), hashlib.sha256).hexdigest()
         if hmac.compare_digest(transaction_hmac, expected_hmac):
+
+            # Fetch the seller name
+            user = AppUser.query.get(ticket.user_id)
+            seller_name = str(user.first_name) + " " + str(user.last_name)
             
             return {
                 'status' : 'valid',
+                'seller_name' : seller_name,
                 'buyer_name' : ticket.buyer_name,
-                'seller_name' : ticket.seller_name,
                 'concert' : ticket.concert,
                 'num_tickets' : ticket.num_tickets,
                 'times_used' : ticket.times_used
@@ -47,9 +53,7 @@ def validate_ticket(transaction_hmac):
     else:
         return {'status': 'invalid'}, 404
 
-def create_ticket(seller_name: str,
-                  seller_email: str,
-                  buyer_name: str,
+def create_ticket(buyer_name: str,
                   concert: str,
                   num_tickets: int) -> str:
 
@@ -58,12 +62,14 @@ def create_ticket(seller_name: str,
     # Generate HMAC for the transaction ID
     transaction_hmac = hmac.new(TRANSACTION_SECRET_KEY.encode(), transaction_id.encode(), hashlib.sha256).hexdigest()
 
-    new_ticket = Ticket(seller_name=seller_name,
-                        buyer_name=buyer_name,
+    user_id = current_user.id
+
+    new_ticket = Ticket(buyer_name=buyer_name,
                         concert=concert,
                         num_tickets=num_tickets,
                         transaction_id=transaction_id,
-                        transaction_hmac=transaction_hmac)
+                        transaction_hmac=transaction_hmac,
+                        user_id = user_id)
 
     db.session.add(new_ticket)
     db.session.commit()
@@ -97,11 +103,8 @@ def claim_ticket(transaction_hmac):
 
 
 def get_concert_time(concert):
-    options_file = os.path.join("/flask-app/static/concert_options.json")
-    with open(options_file, 'r') as file:
-        options = json.load(file)
-    
-    concerts = options['konserter']
+
+    concerts = get_concerts()
 
     def find_concert(name):
         for concert in concerts:
@@ -111,7 +114,7 @@ def get_concert_time(concert):
 
     concert_data = find_concert(concert)
     if concert_data is None:
-        return jsonify({'status', 'Concert not found'}), 404
+        return None
     
     concert_date = concert_data['Datum']
     concert_time = concert_data['Tid']
@@ -122,6 +125,14 @@ def get_concert_time(concert):
     concert_datetime = concert_datetime.replace(tzinfo=tz)
 
     return concert_datetime
+
+def get_concerts():
+    options_file = os.path.join("/flask-app/static/concert_options.json")
+    with open(options_file, 'r') as file:
+        options = json.load(file)
+    
+    concerts = options['konserter']
+    return concerts
 
 
 
