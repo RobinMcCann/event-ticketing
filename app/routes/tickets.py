@@ -119,7 +119,8 @@ def view_ticket(transaction_hmac):
         # Render Ticket
 
         # For debug
-        ticket_info['is_concert'] = True
+        if os.getenv("DEBUG"):
+            ticket_info['is_concert'] = True
 
         ticket_info['transaction_hmac'] = transaction_hmac
 

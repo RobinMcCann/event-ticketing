@@ -18,6 +18,7 @@ services:
       USER_SECRET_KEY: "my_secret_key"
       MAX_TICKETS_PER_ORDER: 8
       SESSION_LOGOUT_TIMEOUT_MINUTES: 5
+      DEBUG: True
 
 
   db:
