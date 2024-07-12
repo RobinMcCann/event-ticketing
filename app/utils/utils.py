@@ -135,6 +135,21 @@ def get_concerts():
     return concerts
 
 
+def format_concert_option(concert):
+
+    name = concert['Namn']
+    concert_date = concert['Datum']
+    concert_time = concert['Tid']
+
+    concert_datetime = datetime.strptime(f"{concert_date} {concert_time}", r"%Y-%m-%d %H:%M:%S")
+
+    # Format "Dec 20 kl. 19:30"
+    formatted = name + " - " + concert_datetime.strftime("%b %d kl. %H:%M")
+
+    return formatted
+
+
+
 
 '''
 import smtplib
