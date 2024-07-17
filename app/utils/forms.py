@@ -1,7 +1,9 @@
 from flask_wtf import FlaskForm
+from flask_login import current_user
 from wtforms import StringField, PasswordField, SubmitField, EmailField, SelectField
 from wtforms.validators import InputRequired, Length, ValidationError, Email, EqualTo, NumberRange, Regexp
 
+from app import bcrypt
 from app.utils.models import AppUser
 from app.utils.utils import get_concerts, format_concert_option
 
@@ -28,9 +30,10 @@ class RegisterForm(FlaskForm):
                                          Length(min=4, max=20)],
                              render_kw={'placeholder' : 'Lösenord'})
 
-    password2 = PasswordField(validators=[InputRequired("Ange lösenordet igen."), EqualTo('password', message="Lösenorden överensstämmer inte!"), 
-                                         Length(min=4, max=20)],
-                             render_kw={'placeholder' : 'Lösenord igen'})
+    password2 = PasswordField(validators=[InputRequired("Ange lösenordet igen."), 
+                                          EqualTo('password', message="Lösenorden överensstämmer inte!"), 
+                                          Length(min=4, max=20)],
+                              render_kw={'placeholder' : 'Lösenord igen'})
 
     submit = SubmitField('Skapa användare')
 
@@ -84,3 +87,24 @@ class TicketForm(FlaskForm):
 class ClaimTicketForm(FlaskForm):
 
     claim = SubmitField("Använd biljett.")
+
+class ChangePasswordForm(FlaskForm):
+
+    current_password = PasswordField(validators=[InputRequired("Ange ditt nuvarande lösenord."), 
+                                                 Length(min=4, max=20)],
+                                     render_kw={'placeholder' : 'Ditt nuvarande lösenord'})
+
+    new_password = PasswordField(validators=[InputRequired("Ange ett nytt lösenord."), 
+                                             Length(min=4, max=20)],
+                                 render_kw={'placeholder' : 'Ange ett nytt lösenord'})
+
+    new_password2 = PasswordField(validators=[InputRequired("Ange ett nytt lösenord."), 
+                                              EqualTo('new_password', message="Lösenorden överensstämmer inte!"),
+                                              Length(min=4, max=20)],
+                                  render_kw={'placeholder' : 'Ange ditt nya lösenord igen'})
+
+    def validate_current_password(self, pw):
+        if not bcrypt.check_password_hash(current_user.password_hash, pw.data):
+            raise ValidationError("Fel lösenord.")
+
+    submit = SubmitField("Byt lösenord")                              
