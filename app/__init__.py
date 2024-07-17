@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt 
 from flask_wtf import CSRFProtect
 from flask_login import LoginManager
+from flask_migrate import Migrate
 import os
 from datetime import timedelta
 
@@ -12,6 +13,7 @@ db = SQLAlchemy()
 bcrypt = Bcrypt()
 csrf = CSRFProtect()
 login_manager = LoginManager()
+migrate = Migrate()
 
 def create_app():
     app = Flask(__name__, 
@@ -38,6 +40,7 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     csrf.init_app(app)
+    migrate.init_app(app, db)
 
     return app
 
