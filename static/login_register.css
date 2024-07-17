@@ -47,3 +47,8 @@ input[type="text"], input[type="email"], input[type="number"], input[type="passw
     border: 1px solid #ccc;
     border-radius: 4px;
 }
+
+span {
+    margin-top: -15px;
+    margin-bottom: 5px;
+}

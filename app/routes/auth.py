@@ -1,5 +1,5 @@
 import sys
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_login import login_user, login_required, logout_user, current_user
 
 from app.utils.forms import LoginForm, RegisterForm, ChangePasswordForm
@@ -77,14 +77,22 @@ def change_password():
 
     if form.validate_on_submit():
 
+        try:
+            new_password_hash = bcrypt.generate_password_hash(form.new_password.data).decode('utf-8')
 
-        # make new password
-        new_password_hash = bcrypt.generate_password_hash(form.new_password.data).decode('utf-8')
+            current_user.password_hash = new_password_hash
+            db.session.commit()
+            
 
-        current_user.password_hash = new_password_hash
-        db.session.commit()
-
-        # Do something
-        return None
+        except Exception as e:
+            logger.error(e)
+            succeeded = False
+        
+        else:
+            succeeded = True
+        
+        finally:
+            return render_template('password_changed.html', succeeded = succeeded)
     
     return render_template('change_password.html', form=form)
+

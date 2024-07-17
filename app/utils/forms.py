@@ -1,7 +1,9 @@
 from flask_wtf import FlaskForm
+from flask_login import current_user
 from wtforms import StringField, PasswordField, SubmitField, EmailField, SelectField
 from wtforms.validators import InputRequired, Length, ValidationError, Email, EqualTo, NumberRange, Regexp
 
+from app import bcrypt
 from app.utils.models import AppUser
 from app.utils.utils import get_concerts, format_concert_option
 
@@ -100,5 +102,9 @@ class ChangePasswordForm(FlaskForm):
                                               EqualTo('new_password', message="Lösenorden överensstämmer inte!"),
                                               Length(min=4, max=20)],
                                   render_kw={'placeholder' : 'Ange ditt nya lösenord igen'})
+
+    def validate_current_password(self, pw):
+        if not bcrypt.check_password_hash(current_user.password_hash, pw.data):
+            raise ValidationError("Fel lösenord.")
 
     submit = SubmitField("Byt lösenord")                              
