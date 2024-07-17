@@ -3,7 +3,7 @@ from wtforms import StringField, PasswordField, SubmitField, EmailField, SelectF
 from wtforms.validators import InputRequired, Length, ValidationError, Email, EqualTo, NumberRange, Regexp
 
 from app.utils.models import AppUser
-from app.utils.utils import get_concerts
+from app.utils.utils import get_concerts, format_concert_option
 
 import os
 
@@ -60,7 +60,7 @@ class TicketForm(FlaskForm):
                             render_kw={'placeholder' : 'Beställarens namn'})
 
     concerts = get_concerts()
-    concert_names = [("", "Välj konsert")] + [(concert['Namn'], concert['Namn']) for concert in concerts]
+    concert_names = [("", "Välj konsert")] + [(concert['Namn'], format_concert_option(concert)) for concert in concerts]
 
     concert = SelectField(choices = concert_names,
                           default = "Välj konsert",
