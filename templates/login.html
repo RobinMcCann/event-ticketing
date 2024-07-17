@@ -12,7 +12,13 @@
         <form method="post" action="">
             {{ form.hidden_tag() }}
             {{ form.username(class_ = "input") }}
+            {% for error in form.username.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
             {{ form.password(class_ = "input") }}
+            {% for error in form.password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
             {{ form.submit(class_ = "button") }}
         </form>
         <div class="separator"></div>

@@ -12,11 +12,29 @@
     <form method="post" action="">
         {{ form.hidden_tag() }}
         {{ form.first_name(class_ = "input") }}
+        {% for error in form.first_name.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
         {{ form.last_name(class_ = "input") }}
+        {% for error in form.last_name.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
         {{ form.email(class_ = "input") }}
+        {% for error in form.email.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
         {{ form.username(class_ = "input") }}
+        {% for error in form.username.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
         {{ form.password(class_ = "input") }}
+        {% for error in form.password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
         {{ form.password2(class_ = "input") }}
+        {% for error in form.password2.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
         {{ form.submit(class_ = "button") }}
     </form>
     <div class="separator"></div>
