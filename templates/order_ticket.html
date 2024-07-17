@@ -15,8 +15,17 @@
         <form action="" method="post">
             {{ form.hidden_tag() }}
             {{ form.buyername(class_ = "input") }}
+            {% for error in form.buyername.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
             {{ form.concert(class_ = "select") }}
+            {% for error in form.concert.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
             {{ form.number_of_tickets(class_ = "input") }}
+            {% for error in form.number_of_tickets.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
             {{ form.submit(class_ = "button") }}
         </form>
     </div>
