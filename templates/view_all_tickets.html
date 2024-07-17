@@ -9,6 +9,7 @@
 <body>
     <div class="container">
         <h1> {{ user.username }}s biljetter</h1>
+        <button onclick="window.location.href='{{ url_for('main.dashboard') }}';" class="button-back">Tillbaka till framsidan.</button>
         <table>
             <thead>
                 <tr>
@@ -24,14 +25,35 @@
                     <tr>
                         <td>{{ ticket.buyer_name }}</td>
                         <td>{{ ticket.concert }}</td>
-                        <td>{{ ticket.num_tickets }}</td>
-                        <td><a href="http://localhost:5000/view_ticket/{{ ticket.transaction_hmac }}">http://localhost:5000/view_ticket/{{ ticket.transaction_hmac }}</a></td>
+                        <td>{{ ticket.num_tickets }} - Använda: {{ticket.times_used}}/{{ ticket.num_tickets }}  </td>
+                        <td>
+                            <a href="http://localhost:5000/view_ticket/{{ ticket.transaction_hmac }}">Visa biljett</a>
+                            <button class="button-copy" onclick="copyToClipboard('http://localhost:5000/view_ticket/{{ ticket.transaction_hmac }}', this)">Kopiera</button>
+                        </td>
                         <!-- Add more columns as needed -->
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <div class="separator"></div>
-        <button onclick="window.location.href='{{ url_for('main.dashboard') }}';" class="button">Tillbaka till framsidan.</button>
     </div>
+
+    <script>
+        function copyToClipboard(link, button) {
+            const el = document.createElement('textarea');
+            el.value = link;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            button.innerText = "Kopierad"
+            button.classList.add("button-copied")
+            button.classList.remove("button-copy")
+            setTimeout(() => {
+                button.innerText = 'Kopiera';
+                button.classList.remove("button-copied")
+                button.classList.add("button-copy")     
+            }, 2000); // Change text back after 2 seconds
+        }
+    </script>
 </body>
