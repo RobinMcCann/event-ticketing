@@ -84,3 +84,19 @@ class TicketForm(FlaskForm):
 class ClaimTicketForm(FlaskForm):
 
     claim = SubmitField("Använd biljett.")
+
+class ChangePasswordForm(FlaskForm):
+
+    current_password = PasswordField(validators=[InputRequired("Ange ditt nuvarande lösenord."), 
+                                                 Length(min=4, max=20)],
+                                     render_kw={'placeholder' : 'Ditt nuvarande lösenord'})
+
+    new_password = PasswordField(validators=[InputRequired("Ange ett nytt lösenord."), 
+                                                 Length(min=4, max=20)],
+                                     render_kw={'placeholder' : 'Ange ett nytt lösenord'})
+
+    new_password2 = PasswordField(validators=[InputRequired("Ange ett nytt lösenord."), EqualTo('new_password', message="Lösenorden överensstämmer inte!")
+                                                 Length(min=4, max=20)],
+                                     render_kw={'placeholder' : 'Ange ditt nya lösenord igen'})
+
+    submit = SubmitField("Byt lösenord")                              
