@@ -31,9 +31,11 @@ def create_app():
     from app.routes.tickets import tickets as tickets_bp
     from app.routes.auth import auth as auth_bp
     from app.routes.main import main as main_bp
+    from app.routes.admin import admin as admin_bp
     app.register_blueprint(tickets_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(admin_bp)
 
     db.init_app(app)
     bcrypt.init_app(app)

@@ -1,5 +1,6 @@
+from locale import currency
 from flask import Blueprint, render_template, redirect, url_for
-from flask_login import login_required
+from flask_login import login_required, current_user
 import sys
 
 main = Blueprint('main', __name__)
@@ -26,4 +27,7 @@ logger = logging.getLogger(__name__)
 @main.route('/')
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+
+    is_admin = current_user.is_admin
+
+    return render_template('dashboard.html', is_admin = is_admin)

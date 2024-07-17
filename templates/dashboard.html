@@ -14,6 +14,13 @@
         <button onclick="window.location.href='{{ url_for('tickets.order_ticket') }}';" class="button">Beställ biljetter</button>
         <button onclick="window.location.href='{{ url_for('tickets.view_user_tickets') }}';" class="button">Visa dina biljetter</button>
         <button onclick="window.location.href='{{ url_for('auth.change_password') }}';" class="button">Ändra lösenord</button>
+        <div class="separator"></div>
+        {% if is_admin %}
+        <h2>Administratörsverktyg</h2>
+        <button onclick="window.location.href='{{ url_for('admin.user_admin') }}';" class="button">Användarhantering</button>
+        <button onclick="window.location.href='{{ url_for('admin.ticket_admin') }}';" class="button">Biljetthantering</button>
+        <div class="separator"></div>
+        {% endif %}
         <button onclick="window.location.href='{{ url_for('auth.logout') }}';" class="button">Logga ut</button>
     </div>
 </body>
