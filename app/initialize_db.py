@@ -1,3 +1,4 @@
+from multiprocessing import AuthenticationError
 from flask_sqlalchemy import SQLAlchemy
 import os
 import time
@@ -6,7 +7,7 @@ import sqlalchemy
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from app import create_app, db
+from app import create_app, db, bcrypt
 from app.utils.models import Ticket, AppUser
 
 # Set up logging
@@ -48,7 +49,6 @@ def utilize_db_lock(func):
 
 @utilize_db_lock
 def initialize_db():
-    logger.debug("SSS")
     logger.info("Initializing database.")
     app = create_app()
     # Your database initialization logic here
@@ -56,17 +56,45 @@ def initialize_db():
         engine = sqlalchemy.create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
         inspector = sqlalchemy.inspect(engine)
 
-        logger.debug("Something")
-
         # Check if any table in the metadata is missing
         all_tables_exist = all(table_name in inspector.get_table_names() for table_name in db.metadata.tables.keys())
         
         if not all_tables_exist:
             db.create_all()
 
-        logger.debug("Something2")
+        # Check if admin user exists. If not, create it.
+        try_create_admin_user()
     
     logger.info("Database initialized.")
+
+
+def try_create_admin_user():
+
+    admin_username = os.getenv("APP_ADMIN_UNAME")
+
+    admin = AppUser.query.filter_by(username=admin_username).first()
+
+    if admin:
+        if not admin.is_admin:
+            raise AuthenticationError("Admin user exists but does not have admin privileges!")
+        logger.debug("Admin user already exists.")
+
+    else:
+        admin_password = os.getenv("APP_ADMIN_PWORD")
+        admin_email_address = os.getenv("APP_ADMIN_EMAIL")
+        hashed_password = bcrypt.generate_password_hash(admin_password).decode('utf-8')
+
+        admin_user = AppUser(username = admin_username,
+                            first_name = "Admin",
+                            last_name = "User",
+                            email_address = admin_email_address,
+                            password_hash = hashed_password,
+                            is_admin = True)
+        
+        db.session.add(admin_user)
+        db.session.commit()
+
+        logger.info("Admin user created.")
 
 
 # For ensuring that connection to db is working before doing anything else
