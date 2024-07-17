@@ -28,9 +28,10 @@ class RegisterForm(FlaskForm):
                                          Length(min=4, max=20)],
                              render_kw={'placeholder' : 'Lösenord'})
 
-    password2 = PasswordField(validators=[InputRequired("Ange lösenordet igen."), EqualTo('password', message="Lösenorden överensstämmer inte!"), 
-                                         Length(min=4, max=20)],
-                             render_kw={'placeholder' : 'Lösenord igen'})
+    password2 = PasswordField(validators=[InputRequired("Ange lösenordet igen."), 
+                                          EqualTo('password', message="Lösenorden överensstämmer inte!"), 
+                                          Length(min=4, max=20)],
+                              render_kw={'placeholder' : 'Lösenord igen'})
 
     submit = SubmitField('Skapa användare')
 
@@ -92,11 +93,12 @@ class ChangePasswordForm(FlaskForm):
                                      render_kw={'placeholder' : 'Ditt nuvarande lösenord'})
 
     new_password = PasswordField(validators=[InputRequired("Ange ett nytt lösenord."), 
-                                                 Length(min=4, max=20)],
-                                     render_kw={'placeholder' : 'Ange ett nytt lösenord'})
+                                             Length(min=4, max=20)],
+                                 render_kw={'placeholder' : 'Ange ett nytt lösenord'})
 
-    new_password2 = PasswordField(validators=[InputRequired("Ange ett nytt lösenord."), EqualTo('new_password', message="Lösenorden överensstämmer inte!")
-                                                 Length(min=4, max=20)],
-                                     render_kw={'placeholder' : 'Ange ditt nya lösenord igen'})
+    new_password2 = PasswordField(validators=[InputRequired("Ange ett nytt lösenord."), 
+                                              EqualTo('new_password', message="Lösenorden överensstämmer inte!"),
+                                              Length(min=4, max=20)],
+                                  render_kw={'placeholder' : 'Ange ditt nya lösenord igen'})
 
     submit = SubmitField("Byt lösenord")                              
