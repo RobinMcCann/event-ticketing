@@ -40,7 +40,7 @@ class RegisterForm(FlaskForm):
     def validate_username(self, username):
         username_exists = AppUser.query.filter_by(username=username.data).first()
 
-        if username_exists:
+        if username_exists or username.data == "admin":
             raise ValidationError("Användarnamnet är taget redan. Välj ett annat.")
 
 
